@@ -6,7 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from general import general_eda
 from specific_case import species_specific_eda
-from llamaIndex_agent import agent_prompt
+from llamaIndex_agent import agent_interface
 
 # -----------------------------------------------------
 # 1. LOAD / PREPARE YOUR DATA
@@ -22,13 +22,6 @@ def load_data():
     return df
 
 df = load_data()
-
-def get_API ():
-    GOOGLE_API_KEY = st.text_input("Enter Your Google API Key: ", type="password")
-    if not GOOGLE_API_KEY:
-        st.warning("Please enter your Google API Key to proceed.")
-        st.stop()
-    return GOOGLE_API_KEY
 
 st.sidebar.title("Navigation")
 mode = st.sidebar.radio("Choose View", ["General EDA", "Species Search","AI agent EDA"])
@@ -50,19 +43,8 @@ elif mode == "Species Search":
 # 5. AI Agent SECTION
 # -----------------------------------------------------
 elif mode == "AI agent EDA":
-    st.header("🧠 Ask our LLM Agent anything about your data!")
-
-    user_query = st.text_input("🔍 Enter your question about the dataset:")
-    if user_query:
-        with st.spinner("Thinking..."):
-            try:
-                response, fig = agent_prompt(user_query)
-                st.markdown(response)
-                if fig:
-                    st.plotly_chart(fig, use_container_width=True)
-            except Exception as e:
-                st.error(f"❌ Error processing query: {e}")
-   
+    st.header("🧠 Ask our LLM Agent anything about your data!") 
+    agent_interface()
 
 # -----------------------------------------------------
 # 5. OPTIONAL FOOTER / NOTES

@@ -1,4 +1,5 @@
 import streamlit as st
+import plotly.express as px
 
 def abundance_trend_over_years(df_spec, species_input):
     st.write("**1. Abundance Trend Over Years**")

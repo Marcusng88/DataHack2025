@@ -1,6 +1,8 @@
+import time
 from llama_index.core.llms import ChatMessage
-from main import get_API
+from utils import get_API
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 import json
@@ -26,8 +28,20 @@ try:
 except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
 
+key = get_API()
+llm = GoogleGenAI(api_key=key, model_name="models/gemma-3-27b-it")
 
-llm = GoogleGenAI(api_key=get_API, model_name="models/gemma-3-27b-it")
+@st.cache_data
+def load_data():
+    # Replace this with your actual data-loading logic.
+    # For example: pd.read_csv("your_file.csv")
+    # Here we simulate with random data—swap in your real df.
+    n = 1000
+    rng = np.random.default_rng(42)
+    df = pd.read_csv('datasets\Combined_Less.csv')
+    return df
+
+df = load_data()
 
 def query_pipeline(df):
     instruction_str = (
@@ -228,23 +242,37 @@ def agent_prompt(prompt):
     st.warning(f"An error occurred: {e}")
     st.warning("Attempting to access results directly from pipeline state if possible (this depends on the specific QP implementation)")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hi! 👋 Ask me something about your dataset!"}]
+def agent_interface():
+    if "messages" not in st.session_state:
+        st.session_state.messages = [{"role": "assistant", "content": "Let's start chatting! 👇"}]
 
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-if prompt := st.chat_input("Ask a data question..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            response, graph_data = agent_prompt(prompt)
-            st.markdown(response)
-            if graph_data:
-                fig = graph_generation(graph_data)
-                if fig:
-                    st.plotly_chart(fig, use_container_width=True)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    col1,col2 = st.columns([3,1])
+    if prompt := st.chat_input("What is up?"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
+            full_response = ""
+
+            with st.spinner("AI agent is thinking..."):
+                query_pipeline(df)
+                assistant_response,graph = agent_prompt(prompt)
+                if graph is not None and not isinstance(graph, str):
+                    st.plotly_chart(graph)
+                
+                for line in assistant_response.split("\n"):
+                    for chunk in line.split():
+                        full_response += chunk + " "
+                        time.sleep(0.05)
+                        message_placeholder.markdown(full_response + "▌")
+                    full_response += "\n"
+                    message_placeholder.markdown(full_response + "▌")
+
+            message_placeholder.markdown(full_response)
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
