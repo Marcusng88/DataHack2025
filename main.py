@@ -5,7 +5,13 @@ import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt
 from specific_case import species_specific_eda
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+api_key = os.getenv("GOOGLE_API_KEY")
+os.environ["GOOGLE_API_KEY"] = api_key
 
 @st.cache_data
 def load_data():

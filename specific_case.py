@@ -1,5 +1,76 @@
 import streamlit as st
 import plotly.express as px
+from adk_agent.agent import root_agent
+from google.adk.sessions import InMemorySessionService
+from google.adk.runners import Runner
+from google.adk.artifacts import InMemoryArtifactService
+from google.genai import types
+
+import os
+import asyncio
+import google.genai as genai
+
+
+
+session_service = InMemorySessionService()
+artifact_service = InMemoryArtifactService()
+APP_NAME = "datahacks2025"
+USER_ID = "user_1"
+SESSION_ID = "session_001"
+runner = Runner(agent=root_agent, app_name=APP_NAME, session_service=session_service,artifact_service=artifact_service)
+session = asyncio.run(session_service.create_session(
+    app_name=APP_NAME, 
+    user_id=USER_ID, 
+    session_id=SESSION_ID
+))
+async def call_agent_async(query: str, runner, user_id, session_id):
+  """Sends a query to the agent and prints the final response."""
+  print(f"\n>>> User Query: {query}")
+
+  # Prepare the user's message in ADK format
+  content = types.Content(role='user', parts=[types.Part(text=query)])
+
+  final_response_text = "Agent did not produce a final response." # Default
+
+  # Key Concept: run_async executes the agent logic and yields Events.
+  # We iterate through events to find the final answer.
+  async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
+
+      # Key Concept: is_final_response() marks the concluding message for the turn.
+      if event.is_final_response():
+          if event.content and event.content.parts:
+             # Assuming text response in the first part
+             final_response_text = event.content.parts[0].text
+          elif event.actions and event.actions.escalate: # Handle potential errors/escalations
+             final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
+          # Add more checks here if needed (e.g., specific error codes)
+          break # Stop processing events once the final response is found
+
+
+async def call_agent_for_image(query: str, runner, user_id, session_id):
+    """Sends a query to the agent and gets the image links"""
+    print(f"\n>>> User Query: {query}")
+
+    # Prepare the user's message in ADK format
+    content = types.Content(role='user', parts=[types.Part(text=query)])
+
+    # Key Concept: run_async executes the agent logic and yields Events.
+    # We iterate through events to find the final answer.
+    async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
+
+        # Key Concept: is_final_response() marks the concluding message for the turn.
+        if event.is_final_response():
+            if event.content and event.content.parts:
+                # Assuming text response in the first part
+                final_response_text = event.content.parts[0].text
+            elif event.actions and event.actions.escalate: # Handle potential errors/escalations
+                final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
+            # Add more checks here if needed (e.g., specific error codes)
+            break # Stop processing events once the final response is found
+    print(final_response_text)
+    return final_response_text
+
+
 
 def abundance_trend_over_years(df_spec, species_input):
     st.write("**1. Abundance Trend Over Years**")
@@ -79,18 +150,42 @@ def summary_statistics(df_spec):
 def species_specific_eda(df):
     st.header("🔍 Species-Specific EDA")
 
-    # Map common names to species
+    # Mapping
     species_mapping = df[["Common_Name", "species"]].dropna().drop_duplicates()
     name_to_species = dict(zip(species_mapping["Common_Name"], species_mapping["species"]))
 
-    # Sidebar dropdown
-    common_name_input = st.sidebar.selectbox("Select species (by common name):", list(name_to_species.keys()))
-    species_input = name_to_species[common_name_input]
+    # Sidebar toggle: dropdown or search
+    input_mode = st.sidebar.radio("Select species by:", ["Dropdown", "Search"])
 
-    # Filter
+    if input_mode == "Dropdown":
+        common_name_input = st.sidebar.selectbox("Choose Common Name:", list(name_to_species.keys()))
+        species_input = name_to_species[common_name_input]
+
+    else:  # Search
+        user_input = st.sidebar.text_input("Type species name (common or scientific):", "")
+        matched_rows = df[
+            df["Common_Name"].str.contains(user_input, case=False, na=False) |
+            df["species"].str.contains(user_input, case=False, na=False)
+        ]
+        
+
+        if user_input:
+            image_link =  asyncio.run(call_agent_for_image(query=user_input,runner=runner,user_id=USER_ID,session_id=SESSION_ID))
+            if image_link != 'not_found':
+                try:
+                    st.image(image_link)
+                except:
+                    return
+        if matched_rows.empty:
+            st.warning("No species match your input.")
+            return
+        common_name_input = matched_rows["Common_Name"].iloc[0]
+        species_input = matched_rows["species"].iloc[0]
+
     df_spec = df[df["species"] == species_input]
-
+    
     st.subheader(f"Showing EDA for '{common_name_input}' ({species_input})")
+
 
     abundance_trend_over_years(df_spec, common_name_input)
     abundance_by_state(df_spec, common_name_input)
