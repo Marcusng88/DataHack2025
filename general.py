@@ -2,14 +2,11 @@ import plotly as pt
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import streamlit as st
 
-# Load the dataset
-df = pd.read_csv('datasets/Combined_Less.csv')
 
-def state_involved():
-    """
-    This function returns a fig with the states involved in analysis.
-    """
+def state_involved(df):
+    st.write("**1. State Involved in This Reaseacrh**")
     involved_states = df['state'].unique()
     highlight_df = pd.DataFrame({'state': involved_states, 'involved': 1})
     print("States discovered in the dataset:\n", involved_states)
@@ -27,14 +24,12 @@ def state_involved():
     fig.update_layout(
         coloraxis_showscale=False,  # Hide colorbar
     )
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-    fig.show()
 
-
-def state_id ():
-    """
-    This function returns a fig with the the geographical coordinates map of each fish is found.
-    """
+def state_id (df):
+    st.write("**2. Appearance Location of Each Species**")
     fig = px.scatter_mapbox(df,
                             lat="LAT_DD",
                             lon="LON_DD",
@@ -43,13 +38,11 @@ def state_id ():
                             zoom=5,
                             height=500)
     fig.update_layout(mapbox_style="open-street-map")
-    fig.show()
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-def abundance_location():
-    """
-    This function returns a fig with the abundance of fish species in different locations.
-    """
+def abundance_location(df):
+    st.write("**3. Species Abundance by Location**")
     fig = px.scatter_mapbox(df,
                             lat="LAT_DD",
                             lon="LON_DD",
@@ -61,23 +54,21 @@ def abundance_location():
                             title='Species Abundance by Location')
     fig.update_layout(mapbox_style="open-street-map")
     fig.update_layout(margin={"r":0,"t":40,"l":0,"b":0})
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-def avg_abundance():
-    """
-    This function returns a fig with the average abundance of fish species in different locations.
-    """
+def avg_abundance(df):
+    st.write("**4. Average Abundance of Fish Species Over Years**")
     avg_abundance = df.groupby('species')['ABUND'].mean().reset_index()
     fig = px.bar(avg_abundance, x='species', y='ABUND',
                  title='Average Abundance of Fish Species Over Years',
                  labels={'ABUND': 'Average Abundance', 'species': 'Fish Species'})
     fig.update_layout(xaxis_title='Fish Species', yaxis_title='Average Abundance')
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-def avg_abundance_by_species():
-    """
-    This function returns a fig with the average abundance of fish species in different locations.
-    """
+def avg_abundance_by_species(df):
+    st.write("**5. Average Abundance Over Years by Species**")
     avg_abundance_by_year = df.groupby(['species', 'YEAR'])['ABUND'].mean().reset_index()
 
     species_year_counts = avg_abundance_by_year['species'].value_counts()
@@ -100,12 +91,11 @@ def avg_abundance_by_species():
         hovermode="x unified",
         height=600
     )
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-def avg_abundance_by_state():
-    """
-    This function returns a fig with the average abundance of fish species in different states.
-    """
+def avg_abundance_by_state(df):
+    st.write("**6. Average Abundance of Fish Species Over Years by State**")
     avg_abundance_by_state = df.groupby(['state', 'species'])['ABUND'].mean().reset_index()
 
     fig = px.bar(
@@ -124,45 +114,26 @@ def avg_abundance_by_state():
         legend_title='Fish Species',
         height=600
     )
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-def seasonal_changes():
-    """
-    This function returns a fig with the seasonal changes in fish abundance.
-    """
-    df['month'] = pd.to_datetime(df['DATE']).dt.month
-    seasonal_abundance = df.groupby(['month', 'species'])['ABUND'].mean().reset_index()
+def seasonal_changes(df):
+    st.write("**7. Seasonal Changes in Fish Abundance**")
+    fig = px.box(df, x='month', y='Temp', title='Temperature by Month',color='month')
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-    fig = px.line(
-        seasonal_abundance,
-        x='month',
-        y='ABUND',
-        color='species',
-        title='Seasonal Changes in Fish Abundance',
-        markers=True
-    )
-
-    fig.update_layout(
-        xaxis_title='Month',
-        yaxis_title='Average Abundance',
-        legend_title='Fish Species',
-        height=600
-    )
-    return fig
-
-def rbp_analysis_by_species ():
-    """
-    This function returns a fig with the RBP analysis of fish species.
-    """
-    rbp_df = df.groupby('species')['RBP'].mean().reset_index()
+def rbp_analysis_by_species (df):
+    st.write("**8. RBP Analysis of Fish Species**")
+    rbp_df = df.groupby('species')['rbpscore'].mean().reset_index()
 
     fig = px.bar(
         rbp_df,
         x='species',
-        y='RBP',
+        y='rbpscore',
         title='RBP Analysis of Fish Species',
-        labels={'RBP': 'RBP Value', 'species': 'Fish Species'},
-        color='RBP',
+        labels={'rbpscore': 'RBP Value', 'species': 'Fish Species'},
+        color='rbpscore',
         color_continuous_scale=px.colors.sequential.Viridis
     )
 
@@ -171,21 +142,20 @@ def rbp_analysis_by_species ():
         yaxis_title='RBP Value',
         height=600
     )
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-def rbp_analysis_by_state():
-    """
-    This function returns a fig with the RBP analysis of fish species by state.
-    """
-    rbp_state_df = df.groupby(['state', 'species'])['RBP'].mean().reset_index()
+def rbp_analysis_by_state(df):
+    st.write("**9. RBP Analysis of Fish Species by State**")
+    rbp_state_df = df.groupby(['state', 'species'])['rbpscore'].mean().reset_index()
 
     fig = px.bar(
         rbp_state_df,
         x='state',
-        y='RBP',
+        y='rbpscore',
         color='species',
         title='RBP Analysis of Fish Species by State',
-        labels={'RBP': 'RBP Value', 'state': 'State'},
+        labels={'rbpscore': 'RBP Value', 'state': 'State'},
         barmode='group'
     )
 
@@ -195,12 +165,11 @@ def rbp_analysis_by_state():
         legend_title='Fish Species',
         height=600
     )
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-def avg_rbp_score_by_state():
-    """
-    This function returns a fig with the average RBP score by state.
-    """
+def avg_rbp_score_by_state(df):
+    st.write("**10. Average RBP Score by State**")
     state_avg = df.groupby('state', as_index=False)['rbpscore'].mean()
 
     fig = px.choropleth(state_avg,
@@ -210,12 +179,11 @@ def avg_rbp_score_by_state():
                         color_continuous_scale='Viridis',
                         scope='usa',
                         title='Average RBP Score by State')
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-def abundance_over_years_by_state ():
-    """
-    This function returns a fig with the average abundance of fish species over the years by state.
-    """
+def abundance_over_years_by_state (df):
+    st.write("**11. Average Abundance Over Years by State**")
     sum_by_state = df.groupby(['state','YEAR'])['TotCount'].sum().reset_index()
     fig = px.line(
         sum_by_state,
@@ -233,5 +201,41 @@ def abundance_over_years_by_state ():
         hovermode="x unified",
         height=600
     )
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("---")
 
-    return fig
+def general_eda(df):
+    st.write("This section provides an overview of the dataset and general trends.")
+
+    # 1. State Involved
+    state_involved(df)
+
+    # 2. Appearance Location of Each Species
+    state_id(df)
+
+    # 3. Species Abundance by Location
+    abundance_location(df)
+
+    # 4. Average Abundance of Fish Species Over Years
+    avg_abundance(df)
+
+    # 5. Average Abundance Over Years by Species
+    avg_abundance_by_species(df)
+
+    # 6. Average Abundance of Fish Species Over Years by State
+    avg_abundance_by_state(df)
+
+    # 7. Seasonal Changes in Fish Abundance
+    seasonal_changes(df)
+
+    # 8. RBP Analysis of Fish Species
+    rbp_analysis_by_species(df)
+
+    # 9. RBP Analysis of Fish Species by State
+    rbp_analysis_by_state(df)
+
+    # 10. Average RBP Score by State
+    avg_rbp_score_by_state(df)
+
+    # 11. Average Abundance Over Years by State
+    abundance_over_years_by_state(df)

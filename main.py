@@ -4,7 +4,9 @@ import numpy as np
 import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt
-from .specific_case import species_specific_eda
+from general import general_eda
+from specific_case import species_specific_eda
+from llamaIndex_agent import agent_prompt
 
 # -----------------------------------------------------
 # 1. LOAD / PREPARE YOUR DATA
@@ -21,15 +23,22 @@ def load_data():
 
 df = load_data()
 
+def get_API ():
+    GOOGLE_API_KEY = st.text_input("Enter Your Google API Key: ", type="password")
+    if not GOOGLE_API_KEY:
+        st.warning("Please enter your Google API Key to proceed.")
+        st.stop()
+    return GOOGLE_API_KEY
+
 st.sidebar.title("Navigation")
-mode = st.sidebar.radio("Choose View", ["General EDA", "Species Search"])
+mode = st.sidebar.radio("Choose View", ["General EDA", "Species Search","AI agent EDA"])
 
 # -----------------------------------------------------
 # 4. GENERAL EDA SECTION
 # -----------------------------------------------------
 if mode == "General EDA":
     st.header("🗺️ Global Exploratory Analysis")
-    st.write("Coming soon or add your general EDA here...")
+    general_eda(df)
 
 # -----------------------------------------------------
 # 5. SPECIES-LEVEL SEARCH SECTION
@@ -37,7 +46,23 @@ if mode == "General EDA":
 elif mode == "Species Search":
     species_specific_eda(df)
     
+# -----------------------------------------------------
+# 5. AI Agent SECTION
+# -----------------------------------------------------
+elif mode == "AI agent EDA":
+    st.header("🧠 Ask our LLM Agent anything about your data!")
 
+    user_query = st.text_input("🔍 Enter your question about the dataset:")
+    if user_query:
+        with st.spinner("Thinking..."):
+            try:
+                response, fig = agent_prompt(user_query)
+                st.markdown(response)
+                if fig:
+                    st.plotly_chart(fig, use_container_width=True)
+            except Exception as e:
+                st.error(f"❌ Error processing query: {e}")
+   
 
 # -----------------------------------------------------
 # 5. OPTIONAL FOOTER / NOTES
