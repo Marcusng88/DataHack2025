@@ -24,25 +24,25 @@ def load_data():
 df = load_data()
 
 st.sidebar.title("Navigation")
-mode = st.sidebar.radio("Choose View", ["General EDA", "Species Search","AI agent EDA"])
+mode = st.sidebar.radio("Choose View", ["🌏General EDA", "🦈Species Search", "🤖LlamaIndex AI agent EDA"])
 
 # -----------------------------------------------------
 # 4. GENERAL EDA SECTION
 # -----------------------------------------------------
-if mode == "General EDA":
+if mode == "🌏General EDA":
     st.header("🗺️ Global Exploratory Analysis")
     general_eda(df)
 
 # -----------------------------------------------------
 # 5. SPECIES-LEVEL SEARCH SECTION
 # -----------------------------------------------------
-elif mode == "Species Search":
+elif mode == "🦈Species Search":
     species_specific_eda(df)
     
 # -----------------------------------------------------
 # 5. AI Agent SECTION
 # -----------------------------------------------------
-elif mode == "AI agent EDA":
+elif mode == "🤖LlamaIndex AI agent EDA":
     st.header("🧠 Ask our LLM Agent anything about your data!") 
     agent_interface()
 
