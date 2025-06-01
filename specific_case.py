@@ -1,4 +1,5 @@
 import streamlit as st
+import plotly.express as px
 
 def abundance_trend_over_years(df_spec, species_input):
     st.write("**1. Abundance Trend Over Years**")
@@ -52,15 +53,15 @@ def map_of_locations(df_spec, species_input):
 
 def nitrogen_vs_abundance(df_spec, species_input):
     st.write("**4. Nitrogen (TN) vs Abundance for Selected Species**")
-    if "TN" in df_spec.columns and df_spec["TN"].notna().any():
-        df_spec_tn = df_spec[df_spec["TN"].notna() & df_spec["ABUND"].notna()]
+    if "TN" in df_spec.columns and df_spec["NO3"].notna().any():
+        df_spec_tn = df_spec[df_spec["NO3"].notna() & df_spec["ABUND"].notna()]
         fig = px.scatter(
             df_spec_tn,
-            x="TN",
+            x="NO3",
             y="ABUND",
             trendline="ols",
             title=f"Abundance vs Total Nitrogen for '{species_input}'",
-            labels={"TN": "Total Nitrogen", "ABUND": "Abundance"},
+            labels={"NO3": "Total Nitrogen", "ABUND": "Abundance"},
             height=400,
         )
         fig.update_layout(hovermode="closest")
@@ -75,29 +76,24 @@ def summary_statistics(df_spec):
     available_cols = [col for col in cols if col in df_spec.columns]
     st.write(df_spec[available_cols].describe())
 
-# 🧠 Main EDA Logic
 def species_specific_eda(df):
     st.header("🔍 Species-Specific EDA")
 
-    species_input = st.sidebar.text_input(
-        "Enter species (or part of its name):", value=""
-    )
+    # Map common names to species
+    species_mapping = df[["Common_Name", "species"]].dropna().drop_duplicates()
+    name_to_species = dict(zip(species_mapping["Common_Name"], species_mapping["species"]))
 
-    if not species_input:
-        st.info("Please type a species name in the box above to see its EDA.")
-        return
+    # Sidebar dropdown
+    common_name_input = st.sidebar.selectbox("Select species (by common name):", list(name_to_species.keys()))
+    species_input = name_to_species[common_name_input]
 
-    df_spec = df[df["species"].str.contains(species_input, case=False, na=False)]
+    # Filter
+    df_spec = df[df["species"] == species_input]
 
-    if df_spec.empty:
-        st.warning(f"No rows found for species matching '{species_input}'. Try another name.")
-        return
+    st.subheader(f"Showing EDA for '{common_name_input}' ({species_input})")
 
-    st.subheader(f"Showing EDA for '{species_input}' (filtered matches)")
-
-    # Call each modular plot
-    abundance_trend_over_years(df_spec, species_input)
-    abundance_by_state(df_spec, species_input)
-    map_of_locations(df_spec, species_input)
-    nitrogen_vs_abundance(df_spec, species_input)
+    abundance_trend_over_years(df_spec, common_name_input)
+    abundance_by_state(df_spec, common_name_input)
+    map_of_locations(df_spec, common_name_input)
+    nitrogen_vs_abundance(df_spec, common_name_input)
     summary_statistics(df_spec)
