@@ -28,7 +28,8 @@ try:
 except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
 
-key = get_API()
+get_key = get_API()
+key = get_key
 llm = GoogleGenAI(api_key=key, model_name="models/gemma-3-27b-it")
 
 @st.cache_data

@@ -53,5 +53,12 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(
     "⚙️ Data Source: Replace `load_data()` with your CSV/DB.\n\n"
     "🔎 Species Search is case-insensitive and will match substrings.\n\n"
-    "📊 All EDA plots are generated with Plotly for interactivity."
+    "📊 All EDA plots are generated with Plotly for interactivity.\n\n"
+    "📈 Refers full Data Science cycle in the [Github Link](https://github.com/Marcusng88/DataHack2025/blob/79e67ba812ec6e840f62ad06a7f91bed2d06aa9f/Hokkien_Mee_is_Black_DataHacks_2025.ipynb)\n\n"
+)
+
+st.sidebar.markdown("---")
+st.sidebar.markdown(
+    "👨‍💻 Developed by [(Marcus) Ng Zheng Jie](https://www.linkedin.com/in/ng-zheng-jie/) & [(Harry) Cheng Kai Huang](https://www.linkedin.com/in/cheng-kai-huang-913240201/)\n\n"
+    "(c) Copyright of Hokkien Mee is Red. All rights reserved. For DataHacks purpose."
 )
