@@ -6,7 +6,7 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 import json
-
+import os
 import asyncio
 
 
@@ -28,9 +28,8 @@ try:
 except RuntimeError:
     asyncio.set_event_loop(asyncio.new_event_loop())
 
-get_key = get_API()
-key = get_key
-llm = GoogleGenAI(api_key=key, model_name="models/gemma-3-27b-it")
+api_key = os.getenv('GOOGLE_API_KEY')
+llm = GoogleGenAI(api_key=api_key, model_name="gemini-2.0-flash-lite")
 
 @st.cache_data
 def load_data():
@@ -242,6 +241,7 @@ def agent_prompt(prompt):
   except Exception as e:
     st.warning(f"An error occurred: {e}")
     st.warning("Attempting to access results directly from pipeline state if possible (this depends on the specific QP implementation)")
+    return "⚠️ The assistant encountered an error while processing your request.", None
 
 def agent_interface():
     if "messages" not in st.session_state:
