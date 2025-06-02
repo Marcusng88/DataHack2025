@@ -6,7 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from general import general_eda
 from specific_case import species_specific_eda
-# from llamaIndex_agent import agent_interface
+from llamaIndex_agent import agent_interface
 
 # -----------------------------------------------------
 # 1. LOAD / PREPARE YOUR DATA
@@ -40,11 +40,9 @@ elif mode == "🦈Species Search":
     
 elif mode == "🤖LlamaIndex AI agent EDA":
     st.header("🧠 Ask our LLM Agent anything about your data!") 
-    # agent_interface()
+    agent_interface()
 
-# -----------------------------------------------------
-# 5. OPTIONAL FOOTER / NOTES
-# -----------------------------------------------------
+
 st.sidebar.markdown("---")
 st.sidebar.markdown(
     "⚙️ Data Source: Replace `load_data()` with your CSV/DB.\n\n"

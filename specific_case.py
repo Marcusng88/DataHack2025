@@ -14,10 +14,10 @@ import asyncio
 
 def info_image_species (species_input):
 
-    api_key = get_Tavily_API()
+    api_key = os.getenv('TAVILY_API_KEY')
 
     if not api_key:
-        st.warning("Please enter your Tavily API key to continue.")
+        st.warning("Please provide your Tavily API key to continue.")
         st.stop() 
 
     try:
@@ -26,7 +26,6 @@ def info_image_species (species_input):
         st.header(f"🌄 Image Search and Basic Information for '{species_input}'")
 
         res= tavily_client.search(query=f'description for species {species_input}',include_images=True,max_results=1)
-        print(res)
         st.image(res['images'][0])
         if res and "results" in res and len(res["results"]) > 0:
             description = res["results"][0].get("content", "No description available.")
@@ -155,6 +154,16 @@ def summary_statistics(df_spec):
     available_cols = [col for col in cols if col in df_spec.columns]
     st.write(df_spec[available_cols].describe())
 
+def final_conclusion(species):
+    try:
+        response = asyncio.run(call_agent_async(species,runner,user_id=USER_ID,session_id=SESSION_ID))
+        print(response)
+        st.write('Final Conclusion and Insight')
+        st.markdown(response)
+    except:
+        st.markdown('---')
+    
+
 def species_specific_eda(df):
     st.header("🔍 Species-Specific EDA")
 
@@ -164,10 +173,12 @@ def species_specific_eda(df):
 
     # Sidebar toggle: dropdown or search
     input_mode = st.sidebar.radio("Select species by:", ["Dropdown", "Search"])
+    user_input = None
 
     if input_mode == "Dropdown":
         common_name_input = st.sidebar.selectbox("Choose Common Name:", list(name_to_species.keys()))
         species_input = name_to_species[common_name_input]
+        user_input = common_name_input
 
     else:  # Search
         user_input = st.sidebar.text_input("Type species name (common or scientific):", "")
@@ -176,9 +187,6 @@ def species_specific_eda(df):
             df["species"].str.contains(user_input, case=False, na=False)
         ]
         
-
-        if user_input:
-            info_image_species(species_input)
         if matched_rows.empty:
             st.warning("No species match your input.")
             return
@@ -195,3 +203,4 @@ def species_specific_eda(df):
     abundance_by_state(df_spec, species_input)
     map_of_locations(df_spec, species_input)
     summary_statistics(df_spec)
+    final_conclusion(species_input)
