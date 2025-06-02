@@ -2,7 +2,6 @@ import streamlit as st
 import plotly.express as px
 from tavily import TavilyClient
 import os
-from utils import get_Tavily_API
 from adk_agent.agent import root_agent
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
@@ -50,7 +49,6 @@ session = asyncio.run(session_service.create_session(
 ))
 async def call_agent_async(query: str, runner, user_id, session_id):
     """Sends a query to the agent and prints the final response."""
-    print(f"\n>>> User Query: {query}")
 
     content = types.Content(role='user', parts=[types.Part(text=query)])
 
@@ -69,10 +67,29 @@ async def call_agent_async(query: str, runner, user_id, session_id):
     return final_response_text
 
 
-async def call_agent_for_existed_graph_insight(query, runner, user_id, session_id):
-    query = pio.to_json(query)
-    content = types.Content(role='user', parts=[types.Part(text=query)])
+async def call_agent_for_existed_graph_insight(df_for_plot, species_input, plot_type, runner, user_id, session_id):
+    plot_description_text = ""
 
+    if plot_type == "abundance_trend":
+        plot_description_text = (
+            f"Here is data showing the average abundance of '{species_input}' over years:\n"
+            f"```csv\n{df_for_plot.to_csv(index=False)}\n```\n"
+            f"Please analyze this data and describe the overall trend in abundance for '{species_input}'."
+        )
+    elif plot_type == "abundance_by_state":
+        plot_description_text = (
+            f"Here is data showing the average abundance of '{species_input}' by state over years:\n"
+            f"```csv\n{df_for_plot.to_csv(index=False)}\n```\n" 
+            f"Analyze the abundance trends for '{species_input}' in each state and highlight any significant differences or patterns."
+        )
+    else:
+        plot_description_text = (
+            f"I have some data related to a graph. Here it is:\n"
+            f"```csv\n{df_for_plot.to_csv(index=False)}\n```\n"
+            f"Can you provide general insights about this data?"
+        )
+
+    content = types.Content(role='user', parts=[types.Part(text=plot_description_text)])
     async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
 
         if event.is_final_response():
@@ -101,15 +118,24 @@ def abundance_trend_over_years(df_spec, species_input):
     
     st.plotly_chart(fig, use_container_width=True)
     try:
-        response = asyncio.run(call_agent_for_existed_graph_insight(fig,runner,user_id=USER_ID,session_id=SESSION_ID))
+        response = asyncio.run(call_agent_for_existed_graph_insight(
+            avg_abund_spec,
+            species_input,
+            "abundance_trend",
+            runner,
+            user_id=USER_ID,
+            session_id=SESSION_ID
+        ))
         st.markdown(response)
-    except:
+    except Exception as e:
+        st.error(f"Error getting insight for abundance trend: {e}")
         return
     st.markdown("---")
 
 def abundance_by_state(df_spec, species_input):
     st.write("**2. Abundance by State**")
     avg_abund_state_spec = df_spec.groupby(["state", "YEAR"])["ABUND"].mean().reset_index()
+
     fig = px.line(
         avg_abund_state_spec,
         x="YEAR",
@@ -121,11 +147,20 @@ def abundance_by_state(df_spec, species_input):
     )
     fig.update_layout(xaxis_title="Year", yaxis_title="Avg Abundance")
     st.plotly_chart(fig, use_container_width=True)
+
     try:
-        response = asyncio.run(call_agent_for_existed_graph_insight(fig,runner,user_id=USER_ID,session_id=SESSION_ID))
+        response = asyncio.run(call_agent_for_existed_graph_insight(
+            avg_abund_state_spec,
+            species_input,
+            "abundance_by_state",
+            runner,
+            user_id=USER_ID,
+            session_id=SESSION_ID
+        ))
         st.markdown(response)
-    except:
-        return
+    except Exception as e:
+        st.error(f"Error getting insight for abundance by state: {e}")
+
     st.markdown("---")
 
 def map_of_locations(df_spec, species_input):
@@ -157,8 +192,7 @@ def summary_statistics(df_spec):
 def final_conclusion(species):
     try:
         response = asyncio.run(call_agent_async(species,runner,user_id=USER_ID,session_id=SESSION_ID))
-        print(response)
-        st.write('Final Conclusion and Insight')
+        st.write('**6. Final Conclusion and Insight**')
         st.markdown(response)
     except:
         st.markdown('---')

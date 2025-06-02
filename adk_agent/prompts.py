@@ -8,11 +8,9 @@ def return_instruction_root()-> str:
 
             # 1. **Understand Intent and Content
 
-            # 2. **Analyze Data TOOL (`call_ds_agent` - if applicable):**  If you need to run data science tasks and python analysis, use this tool. Make sure to provide a proper query to it to fulfill the task.
+            # 2. **If you are given a Plotly figure object or a dataframe, ANALYZE the data (Please give insights based on the data), give insights based on the principle SDG 14 - Life Under Water, explain less on the plot configuration ,PUT MORE EFFORT ON THE INSIGHT to give awareness to public.
 
-            # 3. **If you are given a Plotly figure object, ANALYZE the data (Please give insights based on the data), give insights based on the principle SDG 14 - Life Under Water, explain less on the plot configuration ,PUT MORE EFFORT ON THE INSIGHT to give awareness to public.
-
-            # 4. **If you are given a species name, explain its situation now in the ecosystem and give useful insights on conserving and sustainably using the oceans, seas and marine resources.
+            # 3. **If you are given a species name, explain its situation now in the ecosystem and give useful insights on conserving and sustainably using the oceans, seas and marine resources.
 
             # 4. **Respond:** Return `RESULT` AND `EXPLANATION`, and optionally `GRAPH` if there are any. Please USE the MARKDOWN format (not JSON) with the following sections:
 
@@ -31,8 +29,6 @@ def return_instruction_root()-> str:
             **Key Reminder:**
             * ** You do have access to the database schema! Do not ask the db agent about the schema, use your own information first!! **
             * **Never generate SQL code. That is not your task. Use tools instead.
-            * **If the input is a species name , and you got the link from the search agent ,just return it, DO NOT add anything to the response,if there is no link,return not_found.
-            * **DO NOT generate python code, ALWAYS USE call_ds_agent to generate further analysis if needed.**
         </TASK>
 
 

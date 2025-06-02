@@ -24,6 +24,12 @@ def state_involved(df):
         coloraxis_showscale=False,  # Hide colorbar
     )
     st.plotly_chart(fig, use_container_width=True)
+    st.subheader("**📔Story Telling** - From Rivers to Oceans: Why These States Matter for SDG 14: Life Below Water")
+    st.write("This dataset includes data from various states🗽, each contributing to the understanding of aquatic ecosystems and biodiversity. The states involved are crucial for monitoring and preserving marine life, aligning with the Sustainable Development Goal 14: Life Below Water. By analyzing this data, we can gain insights into the health of aquatic environments, species distribution, and the impact of human activities on marine ecosystems. Each of these states plays a surprising role in the health of marine ecosystems:\n")
+    st.write("- **West Virgina** and **Kentucky's** coal and gas operations can release harmful chemical to water source such as river.\n")
+    st.write("- **Ohio** and **Pennsylvania's** have strong manufacturing and industrial sectors that contribute industrial runoff into waterways\n")
+    st.write("- **New Jersey**, **Maryland** and **Virginia** experiencing fast urbanization and these states are coastal states that potentially to send large volume of waste into the ocean.\n")
+    st.write("*Assisted by Wikipedia*\n")
     st.markdown("---")
 
 
@@ -179,6 +185,11 @@ def avg_rbp_score_by_state(df):
                         scope='usa',
                         title='Average RBP Score by State')
     st.plotly_chart(fig, use_container_width=True)
+    st.subheader("**📔Story Telling** - Title: The Ripple Effect: Understanding RBP Scores Across States\n")
+    st.write("Pollution doesn’t always start in the ocean—it often begins far inland.")
+    st.write("When it rains, chemicals, plastic, and waste from farms, cities, and factories wash into rivers. This is called **River Basin Pollution (RBP)**. The river carries all of it downstream, eventually spilling into the ocean.\n")
+    st.write("This dataset shows the average RBP scores for each state in the USA. The scores range from 0 to 100, with higher numbers indicating more pollution. The map highlights states with high RBP scores, showing where pollution is a big problem.\n")
+    st.write("In general, states with high RBP scores are often those with large cities, heavy industry, or intensive agriculture. These areas produce a lot of waste that can end up in rivers and oceans.\n")
     st.markdown("---")
 
 def abundance_over_years_by_state (df):
@@ -201,6 +212,9 @@ def abundance_over_years_by_state (df):
         height=600
     )
     st.plotly_chart(fig, use_container_width=True)
+    st.subheader("**📔Story Telling** - Title: The Awakening Tide: A Story of Rising Awareness for Life Below Water\n")
+    st.write("At the turn of the 21st century, the world was waking up—not to an alarm clock, but to an ocean in distress. In the past decade, the average abundance of fish species in the United States has shown a significant upward trend, reflecting a growing awareness and commitment to preserving aquatic ecosystems. This increase is particularly notable in states like West Virginia, Kentucky, Ohio, Pennsylvania, New Jersey, Maryland, and Virginia, where conservation efforts have been implemented to protect marine life and habitats. The data suggests that these states are not only crucial for biodiversity but also play a pivotal role in the broader narrative of sustainable development and environmental stewardship. This trend aligns with the Sustainable Development Goal 14: Life Below Water, which emphasizes the importance of conserving and sustainably using the oceans, seas, and marine resources. The rising abundance of fish species serves as a positive indicator of the health of aquatic ecosystems and the effectiveness of conservation initiatives. As we continue to monitor these changes, it is essential to maintain our efforts in protecting marine life and ensuring a sustainable future for our oceans.\n")
+    st.write("However, the journey is far from over. The data also reveals that while most states have made significant strides after significant rise of average abundance at the early 21st century, This was possibly due to the fast paced development and urbanization that leads to decline in marine population. The path forward requires a collective effort to address these issues, ensuring that the oceans remain vibrant and resilient for generations to come. As we look to the future, the story of rising fish abundance is not just about numbers; it is about the awakening tide of awareness and action towards a healthier planet.\n")
     st.markdown("---")
 
 def general_eda(df):
