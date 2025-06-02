@@ -6,9 +6,8 @@ from google.adk.runners import Runner
 from google.adk.artifacts import InMemoryArtifactService
 from google.genai import types
 
-import os
+import plotly.io as pio
 import asyncio
-import google.genai as genai
 
 
 
@@ -47,10 +46,8 @@ async def call_agent_async(query: str, runner, user_id, session_id):
           break # Stop processing events once the final response is found
 
 
-async def call_agent_for_image(query: str, runner, user_id, session_id):
-    """Sends a query to the agent and gets the image links"""
-    print(f"\n>>> User Query: {query}")
-
+async def call_agent_for_existed_graph_insight(query, runner, user_id, session_id):
+    query = pio.to_json(query)
     # Prepare the user's message in ADK format
     content = types.Content(role='user', parts=[types.Part(text=query)])
 
@@ -84,7 +81,9 @@ def abundance_trend_over_years(df_spec, species_input):
         height=400,
     )
     fig.update_layout(xaxis_title="Year", yaxis_title="Avg Abundance")
+    response = asyncio.run(call_agent_for_existed_graph_insight(fig,runner,user_id=USER_ID,session_id=SESSION_ID))
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown(response)
     st.markdown("---")
 
 def abundance_by_state(df_spec, species_input):
