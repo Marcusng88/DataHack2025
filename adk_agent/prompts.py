@@ -10,7 +10,7 @@ def return_instruction_root()-> str:
 
             # 2. **Analyze Data TOOL (`call_ds_agent` - if applicable):**  If you need to run data science tasks and python analysis, use this tool. Make sure to provide a proper query to it to fulfill the task.
 
-            # 3. **If you are given a Plotly figure object, analyze the data, give some insights based on the principle SDG 14 - Life Under Water.
+            # 3. **If you are given a Plotly figure object, analyze the data (Please give insights based on the data), give insights based on the principle SDG 14 - Life Under Water, explain less on the plot configuration ,PUT MORE EFFORT ON THE INSIGHT to give awareness to public.
 
             # 4. **Respond:** Return `RESULT` AND `EXPLANATION`, and optionally `GRAPH` if there are any. Please USE the MARKDOWN format (not JSON) with the following sections:
 

@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.express as px
 from tavily import TavilyClient
+import os
 from utils import get_Tavily_API
 from adk_agent.agent import root_agent
 from google.adk.sessions import InMemorySessionService
@@ -11,12 +12,30 @@ from google.genai import types
 import plotly.io as pio
 import asyncio
 
-def info_image (species_input):
-    tavily_client = TavilyClient(api_key=get_Tavily_API())
+def info_image_species (species_input):
 
-    st.header(f"🌄 Image Search and Basic Information for '{species_input}'")
+    api_key = get_Tavily_API()
 
-    tavily_tool = TavilyToolSpec(api_key=TAVILY_API_KEY)
+    if not api_key:
+        st.warning("Please enter your Tavily API key to continue.")
+        st.stop() 
+
+    try:
+        tavily_client = TavilyClient(api_key=api_key)
+
+        st.header(f"🌄 Image Search and Basic Information for '{species_input}'")
+
+        res= tavily_client.search(query=f'description for species {species_input}',include_images=True,max_results=1)
+        print(res)
+        st.image(res['images'][0])
+        if res and "results" in res and len(res["results"]) > 0:
+            description = res["results"][0].get("content", "No description available.")
+        else:
+            description = "No results found."
+        st.write(description)
+    except:
+        return
+    
 
 
 session_service = InMemorySessionService()
@@ -31,48 +50,39 @@ session = asyncio.run(session_service.create_session(
     session_id=SESSION_ID
 ))
 async def call_agent_async(query: str, runner, user_id, session_id):
-  """Sends a query to the agent and prints the final response."""
-  print(f"\n>>> User Query: {query}")
+    """Sends a query to the agent and prints the final response."""
+    print(f"\n>>> User Query: {query}")
 
-  # Prepare the user's message in ADK format
-  content = types.Content(role='user', parts=[types.Part(text=query)])
+    content = types.Content(role='user', parts=[types.Part(text=query)])
 
-  final_response_text = "Agent did not produce a final response." # Default
+    final_response_text = "Agent did not produce a final response." 
 
-  # Key Concept: run_async executes the agent logic and yields Events.
-  # We iterate through events to find the final answer.
-  async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
 
-      # Key Concept: is_final_response() marks the concluding message for the turn.
-      if event.is_final_response():
-          if event.content and event.content.parts:
-             # Assuming text response in the first part
-             final_response_text = event.content.parts[0].text
-          elif event.actions and event.actions.escalate: # Handle potential errors/escalations
-             final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-          # Add more checks here if needed (e.g., specific error codes)
-          break # Stop processing events once the final response is found
+    async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
+
+        if event.is_final_response():
+            if event.content and event.content.parts:
+                final_response_text = event.content.parts[0].text
+            elif event.actions and event.actions.escalate: 
+                final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
+            break
+    final_response_text = final_response_text.replace("```markdown", "").replace("```", "").strip()
+    return final_response_text
 
 
 async def call_agent_for_existed_graph_insight(query, runner, user_id, session_id):
     query = pio.to_json(query)
-    # Prepare the user's message in ADK format
     content = types.Content(role='user', parts=[types.Part(text=query)])
 
-    # Key Concept: run_async executes the agent logic and yields Events.
-    # We iterate through events to find the final answer.
     async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=content):
 
-        # Key Concept: is_final_response() marks the concluding message for the turn.
         if event.is_final_response():
             if event.content and event.content.parts:
-                # Assuming text response in the first part
                 final_response_text = event.content.parts[0].text
-            elif event.actions and event.actions.escalate: # Handle potential errors/escalations
+            elif event.actions and event.actions.escalate: 
                 final_response_text = f"Agent escalated: {event.error_message or 'No specific message.'}"
-            # Add more checks here if needed (e.g., specific error codes)
-            break # Stop processing events once the final response is found
-    print(final_response_text)
+            break 
+    final_response_text = final_response_text.replace("```markdown", "").replace("```", "").strip()
     return final_response_text
 
 
@@ -89,9 +99,13 @@ def abundance_trend_over_years(df_spec, species_input):
         height=400,
     )
     fig.update_layout(xaxis_title="Year", yaxis_title="Avg Abundance")
-    response = asyncio.run(call_agent_for_existed_graph_insight(fig,runner,user_id=USER_ID,session_id=SESSION_ID))
+    
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown(response)
+    try:
+        response = asyncio.run(call_agent_for_existed_graph_insight(fig,runner,user_id=USER_ID,session_id=SESSION_ID))
+        st.markdown(response)
+    except:
+        return
     st.markdown("---")
 
 def abundance_by_state(df_spec, species_input):
@@ -108,6 +122,11 @@ def abundance_by_state(df_spec, species_input):
     )
     fig.update_layout(xaxis_title="Year", yaxis_title="Avg Abundance")
     st.plotly_chart(fig, use_container_width=True)
+    try:
+        response = asyncio.run(call_agent_for_existed_graph_insight(fig,runner,user_id=USER_ID,session_id=SESSION_ID))
+        st.markdown(response)
+    except:
+        return
     st.markdown("---")
 
 def map_of_locations(df_spec, species_input):
@@ -129,24 +148,6 @@ def map_of_locations(df_spec, species_input):
     st.plotly_chart(fig, use_container_width=True)
     st.markdown("---")
 
-def nitrogen_vs_abundance(df_spec, species_input):
-    st.write("**4. Nitrogen (TN) vs Abundance for Selected Species**")
-    if "TN" in df_spec.columns and df_spec["NO3"].notna().any():
-        df_spec_tn = df_spec[df_spec["NO3"].notna() & df_spec["ABUND"].notna()]
-        fig = px.scatter(
-            df_spec_tn,
-            x="NO3",
-            y="ABUND",
-            trendline="ols",
-            title=f"Abundance vs Total Nitrogen for '{species_input}'",
-            labels={"NO3": "Total Nitrogen", "ABUND": "Abundance"},
-            height=400,
-        )
-        fig.update_layout(hovermode="closest")
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.write("No TN data available for this species.")
-    st.markdown("---")
 
 def summary_statistics(df_spec):
     st.write("**5. Summary Statistics**")
@@ -177,12 +178,7 @@ def species_specific_eda(df):
         
 
         if user_input:
-            image_link =  asyncio.run(call_agent_for_image(query=user_input,runner=runner,user_id=USER_ID,session_id=SESSION_ID))
-            if image_link != 'not_found':
-                try:
-                    st.image(image_link)
-                except:
-                    return
+            info_image_species(species_input)
         if matched_rows.empty:
             st.warning("No species match your input.")
             return
@@ -194,14 +190,8 @@ def species_specific_eda(df):
     st.subheader(f"Showing EDA for '{common_name_input}' ({species_input})")
 
     # Call each modular plot
-    info_image(species_input)
+    info_image_species(species_input)
     abundance_trend_over_years(df_spec, species_input)
     abundance_by_state(df_spec, species_input)
     map_of_locations(df_spec, species_input)
-    nitrogen_vs_abundance(df_spec, species_input)
-
-    abundance_trend_over_years(df_spec, common_name_input)
-    abundance_by_state(df_spec, common_name_input)
-    map_of_locations(df_spec, common_name_input)
-    nitrogen_vs_abundance(df_spec, common_name_input)
     summary_statistics(df_spec)

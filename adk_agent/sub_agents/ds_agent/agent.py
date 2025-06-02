@@ -5,7 +5,7 @@ from .prompts import return_instructions_ds
 
 
 root_agent = Agent(
-    model='gemini-2.0-flash',
+    model='gemini-2.0-flash-lite',
     name="data_science_agent",
     instruction=return_instructions_ds(),
     code_executor=VertexAiCodeExecutor(

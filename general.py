@@ -6,10 +6,9 @@ import streamlit as st
 
 
 def state_involved(df):
-    st.write("**1. State Involved in This Reaseacrh**")
+    st.write("**1. State Involved in This Reasearch**")
     involved_states = df['state'].unique()
     highlight_df = pd.DataFrame({'state': involved_states, 'involved': 1})
-    print("States discovered in the dataset:\n", involved_states)
 
     fig = px.choropleth(
         highlight_df,
