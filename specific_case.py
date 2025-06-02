@@ -1,5 +1,7 @@
 import streamlit as st
 import plotly.express as px
+from tavily import TavilyClient
+from utils import get_Tavily_API
 from adk_agent.agent import root_agent
 from google.adk.sessions import InMemorySessionService
 from google.adk.runners import Runner
@@ -9,6 +11,12 @@ from google.genai import types
 import plotly.io as pio
 import asyncio
 
+def info_image (species_input):
+    tavily_client = TavilyClient(api_key=get_Tavily_API())
+
+    st.header(f"🌄 Image Search and Basic Information for '{species_input}'")
+
+    tavily_tool = TavilyToolSpec(api_key=TAVILY_API_KEY)
 
 
 session_service = InMemorySessionService()
@@ -185,6 +193,12 @@ def species_specific_eda(df):
     
     st.subheader(f"Showing EDA for '{common_name_input}' ({species_input})")
 
+    # Call each modular plot
+    info_image(species_input)
+    abundance_trend_over_years(df_spec, species_input)
+    abundance_by_state(df_spec, species_input)
+    map_of_locations(df_spec, species_input)
+    nitrogen_vs_abundance(df_spec, species_input)
 
     abundance_trend_over_years(df_spec, common_name_input)
     abundance_by_state(df_spec, common_name_input)

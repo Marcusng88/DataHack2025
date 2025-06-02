@@ -4,6 +4,13 @@ import numpy as np
 import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt
+from general import general_eda
+from specific_case import species_specific_eda, info_image
+from llamaIndex_agent import agent_interface
+
+# -----------------------------------------------------
+# 1. LOAD / PREPARE YOUR DATA
+# -----------------------------------------------------
 from specific_case import species_specific_eda
 import os
 from dotenv import load_dotenv
@@ -21,18 +28,30 @@ def load_data():
 df = load_data()
 
 st.sidebar.title("Navigation")
-mode = st.sidebar.radio("Choose View", ["General EDA", "Species Search"])
+mode = st.sidebar.radio("Choose View", ["🌏General EDA", "🦈Species Search", "🤖LlamaIndex AI agent EDA"])
+
+# -----------------------------------------------------
+# 4. GENERAL EDA SECTION
+# -----------------------------------------------------
 
 
 if mode == "General EDA":
     st.header("🗺️ Global Exploratory Analysis")
-    st.write("Coming soon or add your general EDA here...")
+    general_eda(df)
 
+# -----------------------------------------------------
+# 5. SPECIES-LEVEL SEARCH SECTION
+# -----------------------------------------------------
+elif mode == "🦈Species Search":
 
-elif mode == "Species Search":
     species_specific_eda(df)
     
-
+# -----------------------------------------------------
+# 5. AI Agent SECTION
+# -----------------------------------------------------
+elif mode == "🤖LlamaIndex AI agent EDA":
+    st.header("🧠 Ask our LLM Agent anything about your data!") 
+    agent_interface()
 
 # -----------------------------------------------------
 # 5. OPTIONAL FOOTER / NOTES
@@ -41,5 +60,12 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(
     "⚙️ Data Source: Replace `load_data()` with your CSV/DB.\n\n"
     "🔎 Species Search is case-insensitive and will match substrings.\n\n"
-    "📊 All EDA plots are generated with Plotly for interactivity."
+    "📊 All EDA plots are generated with Plotly for interactivity.\n\n"
+    "📈 Refers full Data Science cycle in the [Github Link](https://github.com/Marcusng88/DataHack2025/blob/79e67ba812ec6e840f62ad06a7f91bed2d06aa9f/Hokkien_Mee_is_Black_DataHacks_2025.ipynb)\n\n"
+)
+
+st.sidebar.markdown("---")
+st.sidebar.markdown(
+    "👨‍💻 Developed by [(Marcus) Ng Zheng Jie](https://www.linkedin.com/in/ng-zheng-jie/) & [(Harry) Cheng Kai Huang](https://www.linkedin.com/in/cheng-kai-huang-913240201/)\n\n"
+    "(c) Copyright of Hokkien Mee is Red. All rights reserved. For DataHacks purpose."
 )
