@@ -58,10 +58,11 @@ This app uses the **Google Gemini API** for insights and natural language proces
 cp .env-example .env    # Windows: copy .env-example .env
 ```
 
-2. Paste your Google API key in \`.env\`:
+2. Paste your Google API key and Tavily API key in \`.env\`:
 
 ```env
 GOOGLE_API_KEY=your-google-api-key-here
+TAVILY_API_KEY=your-tavily-api-key-here
 ```
 
 > 🔑 Get your API key from: [https://makersuite.google.com/app/apikey](https://makersuite.google.com/app/apikey)
