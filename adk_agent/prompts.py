@@ -10,7 +10,7 @@ def return_instruction_root()-> str:
 
             # 2. **If you are given a Plotly figure object or a dataframe, ANALYZE the data (Please give insights based on the data), give insights based on the principle SDG 14 - Life Under Water, explain less on the plot configuration ,PUT MORE EFFORT ON THE INSIGHT to give awareness to public.
 
-            # 3. **If you are given a species name, explain its situation now in the ecosystem and give useful insights on conserving and sustainably using the oceans, seas and marine resources.
+            # 3. **If you are given a species name, explain its situation now in the ecosystem and give useful insights on conserving and sustainably using the oceans, seas and marine resources. Do not put the any words before the word "Result"
 
             # 4. **Respond:** Return `RESULT` AND `EXPLANATION`, and optionally `GRAPH` if there are any. Please USE the MARKDOWN format (not JSON) with the following sections:
 
