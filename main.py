@@ -5,7 +5,7 @@ import plotly.express as px
 import seaborn as sns
 import matplotlib.pyplot as plt
 from general import general_eda
-from specific_case import species_specific_eda
+from specific_case import species_specific_eda, info_image
 from llamaIndex_agent import agent_interface
 
 # -----------------------------------------------------

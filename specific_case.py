@@ -1,5 +1,16 @@
 import streamlit as st
 import plotly.express as px
+from tavily import TavilyClient
+from utils import get_Tavily_API
+
+def info_image (species_input):
+    tavily_client = TavilyClient(api_key=get_Tavily_API())
+
+    st.header(f"🌄 Image Search and Basic Information for '{species_input}'")
+
+    tavily_tool = TavilyToolSpec(api_key=TAVILY_API_KEY)
+
+    
 
 def abundance_trend_over_years(df_spec, species_input):
     st.write("**1. Abundance Trend Over Years**")
@@ -97,6 +108,7 @@ def species_specific_eda(df):
     st.subheader(f"Showing EDA for '{species_input}' (filtered matches)")
 
     # Call each modular plot
+    info_image(species_input)
     abundance_trend_over_years(df_spec, species_input)
     abundance_by_state(df_spec, species_input)
     map_of_locations(df_spec, species_input)
